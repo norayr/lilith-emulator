@@ -36,6 +36,12 @@ CONST
   JMPB = 202;
   JMPZ = 203;
   JMPNZ = 204;
+  LDL = 205;
+  STL = 206;
+  LDA = 207;
+  LDC = 208;
+  LDV = 209;
+  STV = 210;
 
 VAR
   a: ARRAY MaxExprStack OF LilithTypes.Word;
@@ -221,6 +227,18 @@ BEGIN
         w := Pop(); IF w = 0 THEN PC := SYSTEM.VAL(INTEGER, Next2()) ELSE INC(PC, 2) END;
       | JMPNZ:
         w := Pop(); IF w # 0 THEN PC := SYSTEM.VAL(INTEGER, Next2()) ELSE INC(PC, 2) END;
+      | LDL:
+        w := SYSTEM.VAL(LilithTypes.Word, LilithMemory.stack^[LilithMemory.L + SNext()]); Push(w);
+      | STL:
+        w := Pop(); LilithMemory.stack^[LilithMemory.L + SNext()] := w;
+      | LDA:
+        Push(SYSTEM.VAL(LilithTypes.Word, LilithMemory.L + SNext()));
+      | LDC:
+        Push(Next2());
+      | LDV:
+        w := Pop(); Push(LilithMemory.stack^[SYSTEM.VAL(INTEGER, w)]);
+      | STV:
+        w1 := Pop(); w2 := Pop(); LilithMemory.stack^[SYSTEM.VAL(INTEGER, w1)] := w2;
       ELSE
         Out.String("Unknown opcode: "); Out.Int(opcode, 5); Out.Ln;
         LilithQuit.Quit("Unknown opcode")
