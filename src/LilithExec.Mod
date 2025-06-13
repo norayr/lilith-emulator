@@ -225,6 +225,18 @@ BEGIN
         w := SYSTEM.VAL(LilithTypes.Word, LilithMemory.L + SNext()); Push(LilithMemory.stack^[SYSTEM.VAL(INTEGER, w)]);
       | STL:
         w1 := Pop(); w := SYSTEM.VAL(LilithTypes.Word, LilithMemory.L + SNext()); LilithMemory.stack^[SYSTEM.VAL(INTEGER, w)] := w1;
+      | LDA:
+        w := SYSTEM.VAL(LilithTypes.Word, LilithMemory.L + SNext()); Push(w);
+      | LDC:
+        w := Next2(); Push(w);
+      | LDV:
+        w := Pop(); Push(LilithMemory.stack^[SYSTEM.VAL(INTEGER, w)]);
+      | STV:
+        w2 := Pop(); w1 := Pop(); LilithMemory.stack^[SYSTEM.VAL(INTEGER, w1)] := w2;
+      | LDPI:
+        Push(LilithMemory.stack^[SYSTEM.VAL(INTEGER, LilithMemory.P)]);
+      | STPI:
+        LilithMemory.stack^[SYSTEM.VAL(INTEGER, LilithMemory.P)] := Pop();
       ELSE
         Out.String("Unknown opcode: "); Out.Int(opcode, 5); Out.Ln;
         LilithQuit.Quit("Unknown opcode")
