@@ -192,8 +192,11 @@ BEGIN
       | XCH:
         w1 := Pop(); w2 := Pop(); Push(w1); Push(w2);
       | CSP:
-        (* Placeholder for system call handling *)
         w := Next(); Out.String("CSP not yet implemented, opcode param: "); Out.Int(SYSTEM.VAL(INTEGER, w), 5); Out.Ln;
+      | LDL:
+        w := SYSTEM.VAL(LilithTypes.Word, LilithMemory.L + SNext()); Push(LilithMemory.stack^[SYSTEM.VAL(INTEGER, w)]);
+      | STL:
+        w1 := Pop(); w := SYSTEM.VAL(LilithTypes.Word, LilithMemory.L + SNext()); LilithMemory.stack^[SYSTEM.VAL(INTEGER, w)] := w1;
       ELSE
         Out.String("Unknown opcode: "); Out.Int(opcode, 5); Out.Ln;
         LilithQuit.Quit("Unknown opcode")
