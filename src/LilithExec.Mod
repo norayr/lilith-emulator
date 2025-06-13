@@ -30,6 +30,8 @@ CONST
   LE = 196;
   GT = 197;
   GE = 198;
+  MARK = 199;
+  JMP = 200;
 
 VAR
   a: ARRAY MaxExprStack OF LilithTypes.Word;
@@ -192,23 +194,21 @@ BEGIN
       | NEG:
         w := Pop(); Push(SYSTEM.VAL(LilithTypes.Word, -SYSTEM.VAL(INTEGER, w)));
       | EQ:
-        w2 := Pop(); w1 := Pop();
-        IF w1 = w2 THEN Push(1) ELSE Push(0) END;
+        w2 := Pop(); w1 := Pop(); IF w1 = w2 THEN Push(1) ELSE Push(0) END;
       | NE:
-        w2 := Pop(); w1 := Pop();
-        IF w1 # w2 THEN Push(1) ELSE Push(0) END;
+        w2 := Pop(); w1 := Pop(); IF w1 # w2 THEN Push(1) ELSE Push(0) END;
       | LT:
-        w2 := Pop(); w1 := Pop();
-        IF SYSTEM.VAL(INTEGER, w1) < SYSTEM.VAL(INTEGER, w2) THEN Push(1) ELSE Push(0) END;
+        w2 := Pop(); w1 := Pop(); IF SYSTEM.VAL(INTEGER, w1) < SYSTEM.VAL(INTEGER, w2) THEN Push(1) ELSE Push(0) END;
       | LE:
-        w2 := Pop(); w1 := Pop();
-        IF SYSTEM.VAL(INTEGER, w1) <= SYSTEM.VAL(INTEGER, w2) THEN Push(1) ELSE Push(0) END;
+        w2 := Pop(); w1 := Pop(); IF SYSTEM.VAL(INTEGER, w1) <= SYSTEM.VAL(INTEGER, w2) THEN Push(1) ELSE Push(0) END;
       | GT:
-        w2 := Pop(); w1 := Pop();
-        IF SYSTEM.VAL(INTEGER, w1) > SYSTEM.VAL(INTEGER, w2) THEN Push(1) ELSE Push(0) END;
+        w2 := Pop(); w1 := Pop(); IF SYSTEM.VAL(INTEGER, w1) > SYSTEM.VAL(INTEGER, w2) THEN Push(1) ELSE Push(0) END;
       | GE:
-        w2 := Pop(); w1 := Pop();
-        IF SYSTEM.VAL(INTEGER, w1) >= SYSTEM.VAL(INTEGER, w2) THEN Push(1) ELSE Push(0) END;
+        w2 := Pop(); w1 := Pop(); IF SYSTEM.VAL(INTEGER, w1) >= SYSTEM.VAL(INTEGER, w2) THEN Push(1) ELSE Push(0) END;
+      | MARK:
+        w := Pop(); Mark(w, FALSE);
+      | JMP:
+        w := Next2(); PC := SYSTEM.VAL(INTEGER, w);
       ELSE
         Out.String("Unknown opcode: "); Out.Int(opcode, 5); Out.Ln;
         LilithQuit.Quit("Unknown opcode")
