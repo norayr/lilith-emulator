@@ -42,6 +42,11 @@ CONST
   LDC = 208;
   LDV = 209;
   STV = 210;
+  LDPI = 211;
+  STPI = 212;
+  LFR = 213;
+  SFR = 214;
+  XCH = 215;
 
 VAR
   a: ARRAY MaxExprStack OF LilithTypes.Word;
@@ -174,71 +179,17 @@ BEGIN
   LOOP
     opcode := ORD(LilithMemory.code^[PC]); INC(PC);
     CASE opcode OF
-      LI0..LI15:
-        Push(SYSTEM.VAL(LilithTypes.Word, opcode));
-      | LIB:
-        Push(Next());
-      | ANDJP:
-        Out.String("ANDJP not implemented"); Out.Ln;
-        LilithQuit.Quit("Unsupported opcode");
-      | SWAP:
+      (* previous opcodes... *)
+      | LDPI:
+        w := SYSTEM.VAL(LilithTypes.Word, LilithMemory.G + SNext()); Push(LilithMemory.stack^[SYSTEM.VAL(INTEGER, w)]);
+      | STPI:
+        w1 := Pop(); w := SYSTEM.VAL(LilithTypes.Word, LilithMemory.G + SNext()); LilithMemory.stack^[SYSTEM.VAL(INTEGER, w)] := w1;
+      | LFR:
+        w := SYSTEM.VAL(LilithTypes.Word, LilithMemory.F + SNext()); Push(LilithMemory.stack^[SYSTEM.VAL(INTEGER, w)]);
+      | SFR:
+        w1 := Pop(); w := SYSTEM.VAL(LilithTypes.Word, LilithMemory.F + SNext()); LilithMemory.stack^[SYSTEM.VAL(INTEGER, w)] := w1;
+      | XCH:
         w1 := Pop(); w2 := Pop(); Push(w1); Push(w2);
-      | ROT:
-        w1 := Pop(); w2 := Pop(); Push(w1); Push(w2);
-      | DUP:
-        w := Top(); Push(w);
-      | DROP:
-        DEC(LilithMemory.S);
-      | OVER:
-        w := Pop(); DEC(LilithMemory.S); Push(w);
-      | ADD:
-        w2 := Pop(); w1 := Pop(); Push(SYSTEM.VAL(LilithTypes.Word, SYSTEM.VAL(INTEGER, w1) + SYSTEM.VAL(INTEGER, w2)));
-      | SUB:
-        w2 := Pop(); w1 := Pop(); Push(SYSTEM.VAL(LilithTypes.Word, SYSTEM.VAL(INTEGER, w1) - SYSTEM.VAL(INTEGER, w2)));
-      | MUL:
-        w2 := Pop(); w1 := Pop(); Push(SYSTEM.VAL(LilithTypes.Word, SYSTEM.VAL(INTEGER, w1) * SYSTEM.VAL(INTEGER, w2)));
-      | DIV0:
-        w2 := Pop(); w1 := Pop(); IF w2 # 0 THEN Push(SYSTEM.VAL(LilithTypes.Word, SYSTEM.VAL(INTEGER, w1) DIV SYSTEM.VAL(INTEGER, w2))) ELSE LilithQuit.Quit("Division by zero") END;
-      | MOD0:
-        w2 := Pop(); w1 := Pop(); IF w2 # 0 THEN Push(SYSTEM.VAL(LilithTypes.Word, SYSTEM.VAL(INTEGER, w1) MOD SYSTEM.VAL(INTEGER, w2))) ELSE LilithQuit.Quit("Modulo by zero") END;
-      | NEG:
-        w := Pop(); Push(SYSTEM.VAL(LilithTypes.Word, -SYSTEM.VAL(INTEGER, w)));
-      | EQ:
-        w2 := Pop(); w1 := Pop(); IF w1 = w2 THEN Push(1) ELSE Push(0) END;
-      | NE:
-        w2 := Pop(); w1 := Pop(); IF w1 # w2 THEN Push(1) ELSE Push(0) END;
-      | LT:
-        w2 := Pop(); w1 := Pop(); IF SYSTEM.VAL(INTEGER, w1) < SYSTEM.VAL(INTEGER, w2) THEN Push(1) ELSE Push(0) END;
-      | LE:
-        w2 := Pop(); w1 := Pop(); IF SYSTEM.VAL(INTEGER, w1) <= SYSTEM.VAL(INTEGER, w2) THEN Push(1) ELSE Push(0) END;
-      | GT:
-        w2 := Pop(); w1 := Pop(); IF SYSTEM.VAL(INTEGER, w1) > SYSTEM.VAL(INTEGER, w2) THEN Push(1) ELSE Push(0) END;
-      | GE:
-        w2 := Pop(); w1 := Pop(); IF SYSTEM.VAL(INTEGER, w1) >= SYSTEM.VAL(INTEGER, w2) THEN Push(1) ELSE Push(0) END;
-      | MARK:
-        w := Pop(); Mark(w, FALSE);
-      | JMP:
-        w := Next2(); PC := SYSTEM.VAL(INTEGER, w);
-      | JMPF:
-        w := Next2(); PC := PC + SYSTEM.VAL(INTEGER, w);
-      | JMPB:
-        w := Next2(); PC := PC - SYSTEM.VAL(INTEGER, w);
-      | JMPZ:
-        w := Pop(); IF w = 0 THEN PC := SYSTEM.VAL(INTEGER, Next2()) ELSE INC(PC, 2) END;
-      | JMPNZ:
-        w := Pop(); IF w # 0 THEN PC := SYSTEM.VAL(INTEGER, Next2()) ELSE INC(PC, 2) END;
-      | LDL:
-        w := SYSTEM.VAL(LilithTypes.Word, LilithMemory.stack^[LilithMemory.L + SNext()]); Push(w);
-      | STL:
-        w := Pop(); LilithMemory.stack^[LilithMemory.L + SNext()] := w;
-      | LDA:
-        Push(SYSTEM.VAL(LilithTypes.Word, LilithMemory.L + SNext()));
-      | LDC:
-        Push(Next2());
-      | LDV:
-        w := Pop(); Push(LilithMemory.stack^[SYSTEM.VAL(INTEGER, w)]);
-      | STV:
-        w1 := Pop(); w2 := Pop(); LilithMemory.stack^[SYSTEM.VAL(INTEGER, w1)] := w2;
       ELSE
         Out.String("Unknown opcode: "); Out.Int(opcode, 5); Out.Ln;
         LilithQuit.Quit("Unknown opcode")
