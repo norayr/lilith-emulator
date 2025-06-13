@@ -48,6 +48,14 @@ CONST
   SFR = 214;
   XCH = 215;
   CSP = 216;
+  CHKI = 217;
+  CHKS = 218;
+  NOT = 219;
+  AND = 220;
+  IOR = 221;
+  XOR = 222;
+  SL = 223;
+  SR = 224;
 
 VAR
   a: ARRAY MaxExprStack OF LilithTypes.Word;
@@ -180,31 +188,39 @@ BEGIN
   LOOP
     opcode := ORD(LilithMemory.code^[PC]); INC(PC);
     CASE opcode OF
-      (* previous opcodes... *)
-      | LDA:
-        w := SYSTEM.VAL(LilithTypes.Word, SYSTEM.VAL(INTEGER, Pop()) + SNext());
-        Push(w);
-      | LDC:
-        w := SYSTEM.VAL(LilithTypes.Word, Next2());
-        Push(w);
-      | LDV:
+      (* existing opcodes ... *)
+      | CHKI:
         w := Pop();
-        Push(LilithMemory.stack^[SYSTEM.VAL(INTEGER, w)]);
-      | STV:
-        w1 := Pop(); w := Pop();
-        LilithMemory.stack^[SYSTEM.VAL(INTEGER, w)] := w1;
-      | LDPI:
-        w := SYSTEM.VAL(LilithTypes.Word, LilithMemory.G + SNext()); Push(LilithMemory.stack^[SYSTEM.VAL(INTEGER, w)]);
-      | STPI:
-        w1 := Pop(); w := SYSTEM.VAL(LilithTypes.Word, LilithMemory.G + SNext()); LilithMemory.stack^[SYSTEM.VAL(INTEGER, w)] := w1;
-      | LFR:
-        w := SYSTEM.VAL(LilithTypes.Word, LilithMemory.F + SNext()); Push(LilithMemory.stack^[SYSTEM.VAL(INTEGER, w)]);
-      | SFR:
-        w1 := Pop(); w := SYSTEM.VAL(LilithTypes.Word, LilithMemory.F + SNext()); LilithMemory.stack^[SYSTEM.VAL(INTEGER, w)] := w1;
-      | XCH:
-        w1 := Pop(); w2 := Pop(); Push(w1); Push(w2);
-      | CSP:
-        w := Next(); Out.String("CSP not yet implemented, opcode param: "); Out.Int(SYSTEM.VAL(INTEGER, w), 5); Out.Ln;
+        IF (SYSTEM.VAL(INTEGER, w) < -32768) OR (SYSTEM.VAL(INTEGER, w) > 32767) THEN
+          Out.String("CHKI failed: "); Out.Int(SYSTEM.VAL(INTEGER, w), 1); Out.Ln;
+          LilithQuit.Quit("CHKI: Integer overflow")
+        END;
+        Push(w);
+      | CHKS:
+        w := Pop();
+        IF (SYSTEM.VAL(INTEGER, w) < 0) OR (SYSTEM.VAL(INTEGER, w) > 255) THEN
+          Out.String("CHKS failed: "); Out.Int(SYSTEM.VAL(INTEGER, w), 1); Out.Ln;
+          LilithQuit.Quit("CHKS: Set index out of bounds")
+        END;
+        Push(w);
+      | NOT:
+        w := Pop();
+        Push(SYSTEM.VAL(LilithTypes.Word, SYSTEM.VAL(INTEGER, w) / 10000H));
+      | AND:
+        w2 := Pop(); w1 := Pop();
+        Push(SYSTEM.VAL(LilithTypes.Word, SYSTEM.VAL(INTEGER, w1) * SYSTEM.VAL(INTEGER, w2)));
+      | IOR:
+        w2 := Pop(); w1 := Pop();
+        Push(SYSTEM.VAL(LilithTypes.Word, SYSTEM.VAL(INTEGER, w1) + SYSTEM.VAL(INTEGER, w2)));
+      | XOR:
+        w2 := Pop(); w1 := Pop();
+        Push(SYSTEM.VAL(LilithTypes.Word, SYSTEM.VAL(INTEGER, w1) / SYSTEM.VAL(INTEGER, w2)));
+      | SL:
+        w2 := Pop(); w1 := Pop();
+        Push(SYSTEM.VAL(LilithTypes.Word, SYSTEM.VAL(INTEGER, w1) * ASH(1, SYSTEM.VAL(INTEGER, w2))));
+      | SR:
+        w2 := Pop(); w1 := Pop();
+        Push(SYSTEM.VAL(LilithTypes.Word, SYSTEM.VAL(INTEGER, w1) DIV ASH(1, SYSTEM.VAL(INTEGER, w2))));
       | LDL:
         w := SYSTEM.VAL(LilithTypes.Word, LilithMemory.L + SNext()); Push(LilithMemory.stack^[SYSTEM.VAL(INTEGER, w)]);
       | STL:
