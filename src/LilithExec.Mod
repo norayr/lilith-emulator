@@ -32,6 +32,10 @@ CONST
   GE = 198;
   MARK = 199;
   JMP = 200;
+  JMPF = 201;
+  JMPB = 202;
+  JMPZ = 203;
+  JMPNZ = 204;
 
 VAR
   a: ARRAY MaxExprStack OF LilithTypes.Word;
@@ -209,6 +213,14 @@ BEGIN
         w := Pop(); Mark(w, FALSE);
       | JMP:
         w := Next2(); PC := SYSTEM.VAL(INTEGER, w);
+      | JMPF:
+        w := Next2(); PC := PC + SYSTEM.VAL(INTEGER, w);
+      | JMPB:
+        w := Next2(); PC := PC - SYSTEM.VAL(INTEGER, w);
+      | JMPZ:
+        w := Pop(); IF w = 0 THEN PC := SYSTEM.VAL(INTEGER, Next2()) ELSE INC(PC, 2) END;
+      | JMPNZ:
+        w := Pop(); IF w # 0 THEN PC := SYSTEM.VAL(INTEGER, Next2()) ELSE INC(PC, 2) END;
       ELSE
         Out.String("Unknown opcode: "); Out.Int(opcode, 5); Out.Ln;
         LilithQuit.Quit("Unknown opcode")
