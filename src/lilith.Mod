@@ -1,4 +1,4 @@
-MODULE LilithMain;
+MODULE lilith;
 IMPORT LilithMemory, LilithLoad, LilithExec, LilithQuit, Args, SYSTEM;
 CONST
   K = 256;
@@ -26,5 +26,5 @@ BEGIN
   Args.Get(1, name);  (* argv[1] *)
   LilithLoad.LoadFile(name);
   LilithExec.Execute;
-END LilithMain.
+END lilith.
 
