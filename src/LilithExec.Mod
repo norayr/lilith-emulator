@@ -3,7 +3,7 @@ MODULE LilithExec;
 IMPORT LilithMemory, LilithTypes, LilithMnemonic, LilithStorage, LilithStack, LilithEnd, LilithQuit, Out, SYSTEM;
 
 CONST
-  MaxExprStack = 16;
+  MaxExprStack = 128;
   MASK15 = 7FFFH;  (* Mask for 15 bits *)
 
   (* M-code opcodes (decimal values) *)
@@ -313,9 +313,10 @@ VAR
   pcValue: LilithTypes.Word;
 BEGIN
   i := LilithMemory.S;
-  LilithMemory.stack[LilithMemory.S] := x; INC(LilithMemory.S);
-  LilithMemory.stack[LilithMemory.S] := LilithMemory.L; INC(LilithMemory.S);
+  LilithMemory.stack[LilithMemory.S] := x; INC(LilithMemory.S); (* static link *)
+  LilithMemory.stack[LilithMemory.S] := LilithMemory.L; INC(LilithMemory.S); (* dynamic link *)
 
+  (* return address with external flag *)
   IF external THEN
     pcValue := LilithMemory.PC;
     LilithMemory.stack[LilithMemory.S] := BitwiseOr(pcValue, 8000H);
@@ -323,8 +324,12 @@ BEGIN
     LilithMemory.stack[LilithMemory.S] := LilithMemory.PC;
   END;
 
+  (* saving expression stack *)
   INC(LilithMemory.S);
-  INC(LilithMemory.S);
+  FOR i := 0 TO sp-1 DO
+    LilithMemory.stack[LilithMemory.S] := a[i];
+    INC(LilithMemory.S);
+  END;
   LilithMemory.L := i
 END Mark;
 
@@ -387,6 +392,10 @@ VAR
 BEGIN
   LilithMemory.PC := 0;
   LOOP
+    IF LilithMemory.PC MOD 100 = 0 THEN
+      Out.String("PS="); Out.Int(LilithMemory.PC, 0);
+      Out.String(" SP="); Out.Int(sp, 0); Out.Ln
+    END;
     opcode := ORD(LilithMemory.code[4 * LilithMemory.F + LilithMemory.PC]);
     INC(LilithMemory.PC);
 
@@ -537,6 +546,10 @@ BEGIN
     | 82..95: LilithMemory.stack[LilithMemory.G + (opcode MOD 16)] := Pop()
 
     | RTN:
+        (* restoring expression stack *)
+        DEC(LilithMemory.S, sp); (* popping expression stack contents *)
+        sp := LilithMemory.stack[LilithMemory.S-1]; (* saved stack pointer *)
+
         LilithMemory.S := LilithMemory.L;
         LilithMemory.L := LilithMemory.stack[LilithMemory.S+1];
         w := LilithMemory.stack[LilithMemory.S+2];
