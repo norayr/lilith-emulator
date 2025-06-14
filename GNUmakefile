@@ -56,7 +56,7 @@ buildThis:
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/LilithEnd.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/LilithLoad.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/LilithExec.Mod
-	cd $(BUILD) && $(VOC) -m $(mkfile_dir_path)/src/LilithMain.Mod
+	cd $(BUILD) && $(VOC) -m $(mkfile_dir_path)/src/lilith.Mod
 
 tests:
 	cd $(BUILD) && $(VOC) $(mkfile_dir_path)/test/Demo.Mod -m
